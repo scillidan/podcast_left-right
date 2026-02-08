@@ -42,7 +42,7 @@ clear:
 add basename:
 	@mkdir -p txt_no_punc txt-pdf txt-pdf-jpg mp4 srt_punc_to_spc
 	@audio_file="" && \
-	for ext in m4a mp3 wav; do \
+	for ext in m4a mp3; do \
 		if [ -f "{{basename}}.$$ext" ]; then \
 			audio_file="{{basename}}.$$ext"; \
 			break; \
