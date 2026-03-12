@@ -24,12 +24,12 @@ txt-pdf-jpg:
 
 mp4:
 	mkdir -p mp4
-	find txt-pdf-jpg -maxdepth 1 -name "*.jpg" -print0 | while IFS= read -r -d '' f; do \
-		basename=$(basename "$f" .pdf.jpg | sed 's/｜/|/g'); \
+	find txt-pdf-jpg -maxdepth 1 -name "*.jpg" -print0 | sort -z | while IFS= read -r -d '' f; do \
+		basename=$(basename "$f" .jpg | sed 's/\.pdf//g'); \
 		img_file="$f"; \
 		aud_file="${basename}.m4a"; \
-		if [ -f "$aud_file" ]; then \
-			ffmpeg -loop 1 -framerate 1 -i "$img_file" -i "$aud_file" -c:v libx264 -tune stillimage -c:a copy -pix_fmt yuv420p -shortest -y "mp4/${basename}.mp4"; \
+		if [ -f "$aud_file" ] && [ ! -f "mp4/${basename}.mp4" ]; then \
+			ffmpeg -loop 1 -framerate 1 -i "$img_file" -i "$aud_file" -c:v libx264 -tune stillimage -c:a copy -pix_fmt yuv420p -shortest -y "mp4/${basename}.mp4" || echo "FAILED: $basename"; \
 		fi; \
 	done
 
