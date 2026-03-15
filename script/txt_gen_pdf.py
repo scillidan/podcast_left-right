@@ -37,7 +37,10 @@ if __name__ == "__main__":
     src_dir = sys.argv[1]
     dst_dir = sys.argv[2]
 
-    for filename in os.listdir(src_dir):
-        if filename.endswith(".txt"):
-            src_path = os.path.join(src_dir, filename)
-            process_file(src_path, dst_dir)
+    if os.path.isfile(src_dir):
+        process_file(src_dir, dst_dir)
+    else:
+        for filename in os.listdir(src_dir):
+            if filename.endswith(".txt"):
+                src_path = os.path.join(src_dir, filename)
+                process_file(src_path, dst_dir)

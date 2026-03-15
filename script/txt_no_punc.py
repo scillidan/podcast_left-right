@@ -16,6 +16,16 @@ def remove_punctuation_and_spaces(text):
 
 def process_files(src_dir, dst_dir):
     os.makedirs(dst_dir, exist_ok=True)
+    if os.path.isfile(src_dir):
+        src_file = src_dir
+        basename = os.path.basename(src_file)
+        dst_file = os.path.join(dst_dir, basename)
+        with open(src_file, "r", encoding="utf-8") as f:
+            content = f.read()
+        cleaned = remove_punctuation_and_spaces(content)
+        with open(dst_file, "w", encoding="utf-8") as f:
+            f.write(cleaned)
+        return
     for filename in os.listdir(src_dir):
         if filename.endswith(".txt"):
             src_path = os.path.join(src_dir, filename)

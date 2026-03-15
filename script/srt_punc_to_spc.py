@@ -64,6 +64,9 @@ if __name__ == "__main__":
     src_dir = sys.argv[1]
     dst_dir = sys.argv[2]
 
+    if os.path.isfile(dst_dir):
+        print(f"Error: {dst_dir} is a file, not a directory")
+        sys.exit(1)
     os.makedirs(dst_dir, exist_ok=True)
     for filename in os.listdir(src_dir):
         if filename.endswith(".srt"):
