@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import os
 import sys
 
@@ -14,31 +15,23 @@ def remove_punctuation_and_spaces(text):
     return result
 
 
-def process_files(src_dir, dst_dir):
-    os.makedirs(dst_dir, exist_ok=True)
-    if os.path.isfile(src_dir):
-        src_file = src_dir
-        basename = os.path.basename(src_file)
-        dst_file = os.path.join(dst_dir, basename)
-        with open(src_file, "r", encoding="utf-8") as f:
-            content = f.read()
-        cleaned = remove_punctuation_and_spaces(content)
-        with open(dst_file, "w", encoding="utf-8") as f:
-            f.write(cleaned)
-        return
-    for filename in os.listdir(src_dir):
-        if filename.endswith(".txt"):
-            src_path = os.path.join(src_dir, filename)
-            dst_path = os.path.join(dst_dir, filename)
-            with open(src_path, "r", encoding="utf-8") as f:
-                content = f.read()
-            cleaned = remove_punctuation_and_spaces(content)
-            with open(dst_path, "w", encoding="utf-8") as f:
-                f.write(cleaned)
+def process_file(src_path, dst_path):
+    with open(src_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    cleaned = remove_punctuation_and_spaces(content)
+    os.makedirs(os.path.dirname(dst_path), exist_ok=True) if os.path.dirname(
+        dst_path
+    ) else None
+    with open(dst_path, "w", encoding="utf-8") as f:
+        f.write(cleaned)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print(f"Usage: {sys.argv[0]} <src_dir> <dst_dir>")
-        sys.exit(1)
-    process_files(sys.argv[1], sys.argv[2])
+    parser = argparse.ArgumentParser(
+        description="Remove punctuation and spaces from text files"
+    )
+    parser.add_argument("-i", "--input", required=True, help="Input file")
+    parser.add_argument("-o", "--output", required=True, help="Output file")
+    args = parser.parse_args()
+
+    process_file(args.input, args.output)

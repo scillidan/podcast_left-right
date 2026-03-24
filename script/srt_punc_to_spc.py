@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import os
 import re
 import sys
@@ -53,24 +54,17 @@ def process_srt(src_path, dst_path):
                 output.append(cleaned + "\n")
                 i += 1
 
+    os.makedirs(os.path.dirname(dst_path), exist_ok=True) if os.path.dirname(
+        dst_path
+    ) else None
     with open(dst_path, "w", encoding="utf-8") as f:
         f.writelines(output)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print(f"Usage: {sys.argv[0]} <src_dir> <dst_dir>")
-        sys.exit(1)
-    src_dir = sys.argv[1]
-    dst_dir = sys.argv[2]
+    parser = argparse.ArgumentParser(description="Convert SRT punctuation to spaces")
+    parser.add_argument("-i", "--input", required=True, help="Input file")
+    parser.add_argument("-o", "--output", required=True, help="Output file")
+    args = parser.parse_args()
 
-    if os.path.isfile(dst_dir):
-        print(f"Error: {dst_dir} is a file, not a directory")
-        sys.exit(1)
-    os.makedirs(dst_dir, exist_ok=True)
-    for filename in os.listdir(src_dir):
-        if filename.endswith(".srt"):
-            src_path = os.path.join(src_dir, filename)
-            dst_path = os.path.join(dst_dir, filename)
-            process_srt(src_path, dst_path)
-            print(f"Processed: {filename}")
+    process_srt(args.input, args.output)

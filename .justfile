@@ -2,42 +2,34 @@ default:
 	just update
 
 update:
-	python script/update.py
-
-batch:
-	just txt
-	just txt-pdf
-	just txt-pdf-jpg
-	just mp4
-	just srt
-
-txt:
-    python script/txt_no_punc.py txt/ txt_no_punc/
-
-txt-pdf:
-    python script/txt_gen_pdf.py txt_no_punc/ txt-pdf/
-    for f in txt-pdf/*.typ; do typst compile "$f" "${f%.typ}.pdf"; done
-
-txt-pdf-jpg:
-	mkdir -p txt-pdf-jpg
-	for f in txt-pdf/*.pdf; do \
-		basename=$(basename "$f" .pdf); \
-		magick -density 300 "$f[0]" -resize x1080 -background white -alpha remove -quality 90 "txt-pdf-jpg/$basename.pdf.jpg"; \
-	done
-
-mp4:
-	mkdir -p mp4
-	find txt-pdf-jpg -maxdepth 1 -name "*.jpg" -print0 | sort -z | while IFS= read -r -d '' f; do \
-		basename=$(basename "$f" .jpg | sed 's/\.pdf//g'); \
-		img_file="$f"; \
-		aud_file="${basename}.m4a"; \
-		if [ -f "$aud_file" ] && [ ! -f "mp4/${basename}.mp4" ]; then \
-			ffmpeg -loop 1 -framerate 1 -i "$img_file" -i "$aud_file" -c:v libx264 -tune stillimage -c:a copy -pix_fmt yuv420p -shortest -y "mp4/${basename}.mp4" || echo "FAILED: $basename"; \
+	@for f in *.m4a; do \
+		name=`echo "$$f" | sed 's/\.m4a$$//'`; \
+		if [ ! -f "mp4/$$name.mp4" ] && [ -f "txt/$$name.txt" ]; then \
+			echo "Processing $$name"; \
+			just add "$$name"; \
 		fi; \
 	done
 
-srt:
-    python script/srt_punc_to_spc.py srt/ srt_punc_to_spc/
+add $name:
+	python script/txt_no_punc.py -i "txt/{{name}}.txt" -o "txt_no_punc/{{name}}.txt"
+	python script/txt_gen_pdf.py -i "txt_no_punc/{{name}}.txt" -o "txt-pdf/{{name}}.typ"
+	typst compile "txt-pdf/{{name}}.typ" "txt-pdf/{{name}}.pdf"
+	magick -density 300 "txt-pdf/{{name}}.pdf[0]" -resize x1080 -background white -alpha remove -quality 90 "txt-pdf-jpg/{{name}}.pdf.jpg"
+	ffmpeg -loop 1 -framerate 1 -i "txt-pdf-jpg/{{name}}.pdf.jpg" -i "{{name}}.m4a" -c:v libx264 -tune stillimage -c:a copy -pix_fmt yuv420p -shortest -y "mp4/{{name}}.mp4"
+	python script/srt_punc_to_spc.py -i "srt/{{name}}.srt" -o "srt_punc_to_spc/{{name}}.srt"
 
-clear:
-	rm txt-pdf/*.typ
+txt $name:
+	python script/txt_no_punc.py -i "txt/{{name}}.txt" -o "txt_no_punc/{{name}}.txt"
+
+txt-pdf $name:
+	python script/txt_gen_pdf.py -i "txt_no_punc/{{name}}.txt" -o "txt-pdf/{{name}}.typ"
+	typst compile "txt-pdf/{{name}}.typ" "txt-pdf/{{name}}.pdf"
+
+txt-pdf-jpg $name:
+	magick -density 300 "txt-pdf/{{name}}.pdf[0]" -resize x1080 -background white -alpha remove -quality 90 "txt-pdf-jpg/{{name}}.pdf.jpg"
+
+mp4 $name:
+	ffmpeg -loop 1 -framerate 1 -i "txt-pdf-jpg/{{name}}.pdf.jpg" -i "{{name}}.m4a" -c:v libx264 -tune stillimage -c:a copy -pix_fmt yuv420p -shortest -y "mp4/{{name}}.mp4"
+
+srt $name:
+	python script/srt_punc_to_spc.py -i "srt/{{name}}.srt" -o "srt_punc_to_spc/{{name}}.srt"

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import os
 import sys
 
@@ -7,10 +8,7 @@ def escape_typ(s):
     return s.replace("\\", "\\\\").replace('"', '""')
 
 
-def process_file(src_txt, dst_dir):
-    filename = os.path.basename(src_txt)
-    dst_typ = os.path.join(dst_dir, filename.replace(".txt", ".typ"))
-
+def process_file(src_txt, dst_typ):
     with open(src_txt, "r", encoding="utf-8") as f:
         content = f.read()
 
@@ -24,23 +22,18 @@ def process_file(src_txt, dst_dir):
 {escape_typ(content)}
 """
 
-    os.makedirs(dst_dir, exist_ok=True)
+    os.makedirs(os.path.dirname(dst_typ), exist_ok=True) if os.path.dirname(
+        dst_typ
+    ) else None
     with open(dst_typ, "w", encoding="utf-8") as f:
         f.write(typ_content)
     print(f"Generated: {dst_typ}")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print(f"Usage: {sys.argv[0]} <src_txt_dir> <dst_dir>")
-        sys.exit(1)
-    src_dir = sys.argv[1]
-    dst_dir = sys.argv[2]
+    parser = argparse.ArgumentParser(description="Generate Typst PDF from text files")
+    parser.add_argument("-i", "--input", required=True, help="Input file")
+    parser.add_argument("-o", "--output", required=True, help="Output file")
+    args = parser.parse_args()
 
-    if os.path.isfile(src_dir):
-        process_file(src_dir, dst_dir)
-    else:
-        for filename in os.listdir(src_dir):
-            if filename.endswith(".txt"):
-                src_path = os.path.join(src_dir, filename)
-                process_file(src_path, dst_dir)
+    process_file(args.input, args.output)
