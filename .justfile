@@ -1,6 +1,7 @@
 add $name:
 	#!/bin/sh
 	set -eu
+	export PATH="/usr/bin:$PATH"
 	mkdir -p _output/txt _output/txt-no-punc _output/txt-pdf _output/txt-pdf-jpg _output/mp4 _output/srt-punc-to-spc
 	if [ -f "medias/{{name}}.m4a" ]; then
 		media="medias/{{name}}.m4a"
