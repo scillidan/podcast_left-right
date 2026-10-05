@@ -2,7 +2,6 @@
 
 import argparse
 import os
-import sys
 
 
 def remove_punctuation_and_spaces(text):

@@ -2,7 +2,6 @@
 
 import argparse
 import os
-import sys
 
 
 def escape_typ(s):
